@@ -31,7 +31,7 @@ class EmailTemplatesTableSeeder extends Seeder
             'template_subject' => 'Invitation',
             'default_content' =>
                 $emailHeader.'Hi,<br>
-                The admin is inviting you to the Gain Booking
+                The admin is inviting you to the Life Care
                 Please click here on the link {verification_link} to accept!'.$emailFooter
         ]);
 

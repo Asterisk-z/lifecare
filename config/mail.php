@@ -57,7 +57,7 @@ return [
 
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'no-reply@yourdomain.com'),
-        'name' => env('MAIL_FROM_NAME', 'Gain Booking'),
+        'name' => env('MAIL_FROM_NAME', 'Life Care'),
     ],
 
     /*

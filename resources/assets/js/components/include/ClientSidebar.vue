@@ -12,10 +12,34 @@
                     <div>{{ trans('lang.dashboard') }}</div>
                 </a>
             </li>
-            <li :class="{'active-side-bar': route == '/dashboard'}">
+            <li :class="{'active-side-bar': route == '/appointment'}">
                 <a href="#" @click="dashboard">
                     <i class="la la-desktop la-3x"></i>
-                    <div>{{ trans('lang.dashboard') }}</div>
+                    <div>{{ "Appointments" }}</div>
+                </a>
+            </li>
+            <li :class="{'active-side-bar': route == '/chat'}">
+                <a href="#" @click="dashboard">
+                    <i class="la la-desktop la-3x"></i>
+                    <div>{{ "Chats" }}</div>
+                </a>
+            </li>
+            <li :class="{'active-side-bar': route == '/payment'}">
+                <a href="#" @click="dashboard">
+                    <i class="la la-desktop la-3x"></i>
+                    <div>{{ "Payments" }}</div>
+                </a>
+            </li>
+            <li :class="{'active-side-bar': route == '/prescription'}">
+                <a href="#" @click="dashboard">
+                    <i class="la la-desktop la-3x"></i>
+                    <div>{{ "Prescription" }}</div>
+                </a>
+            </li>
+            <li :class="{'active-side-bar': route == '/feedback'}">
+                <a href="#" @click="dashboard">
+                    <i class="la la-desktop la-3x"></i>
+                    <div>{{ "Feedback" }}</div>
                 </a>
             </li>
         </ul>

@@ -17,10 +17,7 @@ class HomeController extends Controller
 {
     public function homePage($serviceAlias = '')
     {
-        $installCheck = config('gain.installed');
-
-        if ($installCheck == true) {
-
+        
             $signupCheck = (object)[
                 'can_signup' => (int)Setting::select('setting_value')->where('setting_name', 'can_signup')->first()->setting_value,
                 'can_login' => (int)Setting::select('setting_value')->where('setting_name', 'can_login')->first()->setting_value,
@@ -50,10 +47,6 @@ class HomeController extends Controller
                 'landingPageMessage' => $landingPageMessage, 'landingPageHeader' => $landingPageHeader
             ]);
 
-        } else {
-
-            return redirect('/install');
-        }
 
     }
 

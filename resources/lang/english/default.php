@@ -22,8 +22,8 @@ return [
     "calender_language_set" => "en",
 
     //home page
-    "welcome_to_gain_booking" => "Welcome to Gain Booking",
-    "home_page_welcome_message" => "We are Gain Booking system to serve you better and easier services. From here you can book your required servises as your choosing time slot as well as your demanded quantity. Select any one service listed below. Following some easy procedure you can book our service by your own. We support your happy booking.",
+    "welcome_to_gain_booking" => "Welcome to Life Cate",
+    "home_page_welcome_message" => "We are Life Cate system to serve you better and easier services. From here you can book your required servises as your choosing time slot as well as your demanded quantity. Select any one service listed below. Following some easy procedure you can book our service by your own. We support your happy booking.",
 
     // Buttons
     "details" => "Details",
@@ -42,7 +42,7 @@ return [
 
     // Warning
     "are_you_sure" => "Are you sure?",
-    "app_title" => "Gain Booking",
+    "app_title" => "Life Cate",
     "login" => "Login",
     "login_here" => "Login Here",
     "login_email" => "Email",
@@ -343,7 +343,7 @@ return [
     "comment" => "Comment",
     "service" => "Service",
     "view" => "View",
-    "book" => "Book",
+    "book" => "Book Appointment",
     "booking_id" => "Booking Id",
     "service_id" => "Service Id",
     "status" => "Status",

@@ -254,7 +254,7 @@ class ServiceController extends Controller
 
     public function getServiceList($id)
     {
-        return Services::select('*')->where('id','!=', $id)->where('business_type', 'salon')->get();
+        return Services::select('*')->where('id','!=', $id)->where('business_type', 'health')->get();
     }
 
     public function getTiming($id, $bDate)

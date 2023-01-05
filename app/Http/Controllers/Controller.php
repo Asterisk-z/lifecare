@@ -44,11 +44,9 @@ class Controller extends BaseController
     public function __construct()
     {
 
-        $installCheck = config('gain.installed');
         $this->appUrl = \Request::root();
         $this->publicPath = $this->appUrl;
 
-        if ($installCheck === true) {
             $this->userss = Auth::user();
 
             $this->settingConfig = new Config();
@@ -75,7 +73,7 @@ class Controller extends BaseController
             $this->currency_code = $this->settingConfig->get('currency_code');
             $this->time_format = $this->settingConfig->get('time_format');
             $this->business_type = $this->settingConfig->get('business_type');
-        }
+        
     }
 
     public function getDomainUrl()

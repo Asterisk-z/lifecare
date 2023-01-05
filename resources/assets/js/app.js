@@ -142,7 +142,7 @@ Vue.component('calendar', require('./components/calendar/calendar.vue'));
 Vue.component('calendar-seven-days', require('./components/salonLanding/GeneralIndex.vue'));
 
 //Salon
-Vue.component('salon_component', require('./components/salonLanding/SalonIndex.vue'));
+Vue.component('landing_component', require('./components/salonLanding/SalonIndex.vue'));
 Vue.component('service_booking_landing', require('./components/salonLanding/ServiceBooking.vue'));
 
 //Login

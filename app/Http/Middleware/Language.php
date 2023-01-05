@@ -9,11 +9,9 @@ class Language
 {
     public function handle($request, \Closure $next)
     {
-        $installCheck = config('gain.installed');
-
         $locale = "english";
 
-        if ( $installCheck && Schema::hasTable('settings')) {
+        if (  Schema::hasTable('settings')) {
             $language = Setting::getSettingValue('language_setting');
 
             if ($language) {

@@ -1,7 +1,7 @@
 <?php
  return array (
-  'app_version' => '1.4',
-  'update_url' => 'https://marketplace.gainhq.com',
-  'app_id' => 'gain-salon-booking',
+  'app_version' => '1.0',
+  'update_url' => '',
+  'app_id' => '',
   'installed' => true,
 ) ;
