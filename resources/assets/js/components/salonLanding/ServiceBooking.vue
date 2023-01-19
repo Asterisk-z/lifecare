@@ -434,7 +434,7 @@
                                                         <i class="las la-clock align-self-center mr-2"/>
                                                         <div class="media-body">
                                                             <p class="service-info-heading">{{
-                                                                trans('lang.duration')}}:</p>
+                                                            trans('lang.duration')}}:</p>
                                                             <p class="service-info-value mb-0">
                                                                 {{
                                                                 humanReadableTimeFormat(singleService.service_duration)
@@ -575,8 +575,8 @@
                                                         class="btn btn-primary app-color mobile-btn btn-block"
                                                         type="submit"
                                                         :disabled="!paymentMethodClicked"
-                                                        @click.prevent="book(0, selectedMethodId)">
-                                                    {{ trans('lang.book') }}
+                                                        @click.prevent="book(netPrice, selectedMethodId)">
+                                                    {{ trans('lang.booktwo') }}
                                                 </button>
                                             </div>
                                         </div>
@@ -1643,6 +1643,8 @@
                 })
             },
             book(bill, method, transaction_id = null) {
+                console.log("here", bill, method);
+
                 let instance = this;
                 if (instance.noOfAdult == 0 && instance.noOfChildren == 0) {
                     instance.seat = 1;
@@ -1684,19 +1686,21 @@
                                 postData: instance.inputFields
                             },
                             (success, responseData) => {
-                                instance.submitPreLoader = true;
-                                instance.hidePreLoader = true;
-                                instance.isBookForm = false;
-                                instance.isContinue = false;
-                                instance.isCalendar = false;
-                                instance.isTime = false;
-                                instance.isCalendarSet = false;
-                                instance.bookCalendar = false;
-                                instance.continuePreLoader = false;
-                                instance.calendar_inner = true;
-                                instance.newCustomFieldData = {};
-                                $('#payment-modal').modal('hide');
-                                $('#success-modal').modal('show');
+                                console.log(responseData)
+                                window.location = responseData.link
+                                // instance.submitPreLoader = true;
+                                // instance.hidePreLoader = true;
+                                // instance.isBookForm = false;
+                                // instance.isContinue = false;
+                                // instance.isCalendar = false;
+                                // instance.isTime = false;
+                                // instance.isCalendarSet = false;
+                                // instance.bookCalendar = false;
+                                // instance.continuePreLoader = false;
+                                // instance.calendar_inner = true;
+                                // instance.newCustomFieldData = {};
+                                // $('#payment-modal').modal('hide');
+                                // $('#success-modal').modal('show');
                             },
                             (error) => {
                                 instance.errors = error.data.errors;

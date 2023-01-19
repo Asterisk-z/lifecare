@@ -15,5 +15,15 @@ return [
         'services.sparkpost.secret' => 'sparkpost_api',
         'services.mailgun.domain' => 'mailgun_domain',
         'services.mailgun.secret' => 'mailgun_api',
-    ]
+    ],
+    
+    "flutter"=>[
+        "secret_key_test"=>env("FLUTTERWAVE_TEST_SECRET_KEY"),
+        "public_key_test"=>env("FLUTTERWAVE_TEST_PUBLIC_KEY"),
+
+        "secret_key_live"=>env("FLUTTERWAVE_LIVE_SECRET_KEY"),
+        "public_key_live"=>env("FLUTTERWAVE_LIVE_PUBLIC_KEY"),
+    ],
+    
+
 ];

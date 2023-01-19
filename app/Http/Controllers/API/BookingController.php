@@ -9,6 +9,8 @@ use Carbon\Carbon;
 use App\Models\Booking;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\ValidPayment;
+use App\Services\Payment as PayService;
 use App\Models\Setting;
 use App\Libraries\Email;
 use App\Models\Services;
@@ -27,6 +29,9 @@ use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
 {
+    public function __construct() {
+
+    }
     public function bookingIndex()
     {
         return view('booking.index');
@@ -120,6 +125,7 @@ class BookingController extends Controller
 
     public function setBooking(Request $request)
     {
+
         $this->validate($request, [
             'first_name' => 'required',
             'seat' => 'required',
@@ -149,27 +155,10 @@ class BookingController extends Controller
         $currency_code = $allSet->currencyCode();
 
         $user = User::where('email', '=', $email)->first();
-
+        // dd($request->all());
         if ($user == null) {
             User::create(['first_name' => $first_name, 'last_name' => $last_name, 'email' => $email, 'phone' => $phone, 'token' => $token]);
         }
-
-        //either phone or email
-        /*if ($email){
-            $user = User::where('phone_object', $request->phone_object)->first();
-
-            if ($user == null) {
-                $verification_code =  mt_rand(100000, 999999);
-                User::create(['first_name' => $first_name, 'last_name' => $last_name, 'email' => $email, 'phone' => $phone, 'phone_object' => $verification_code, 'token' => $token]);
-            }
-
-        }else{
-            $user = User::where('email', '=', $email)->first();
-
-            if ($user == null) {
-                User::create(['first_name' => $first_name, 'last_name' => $last_name, 'email' => $email, 'phone' => $phone, 'token' => $token]);
-            }
-        }*/
 
         $serviceDetails = Services::select('price', 'title', 'service_duration_type', 'business_type', 'percentage', 'auto_confirm')->where('id', $request->id)->first();
 
@@ -188,11 +177,7 @@ class BookingController extends Controller
         $durationTime = Services::getService($request->id)->service_duration;
         $insertGoogleCalender = new GoogleCalendarController();
 
-        if ($serviceDetails->service_duration_type == "daily") {
-            // insert into google calendar
-            $eventIdList = $insertGoogleCalender->dailysaveEvents($title, $booking_date, $comment);
-            $eventIdList = serialize($eventIdList);
-        } elseif ($serviceDetails->service_duration_type == "hourly") {
+        if ($serviceDetails->service_duration_type == "hourly") {
             //insert into google calendar
 
             foreach ($booking_time_new as $key => $val) {
@@ -223,83 +208,83 @@ class BookingController extends Controller
         $adminContent = EmailTemplate::select('template_subject', 'default_content', 'custom_content')->where('template_type', 'admin_notification_for_booking_request')->first();
         $adminEmailSubject = $adminContent->template_subject;
 
-        if ($isAdmin->isAdmin() || $auto_conf == 1) {
+        // if ($isAdmin->isAdmin() || $auto_conf == 1) {
 
-            $booking_id = Booking::create(['service_id' => $request->id, 'user_id' => $user_id->id, 'phone_number' => $phone, 'status' => 'confirmed', 'booking_date' => $booking_date, 'booking_time' => $booking_time, 'quantity' => $quantity, 'comment' => $comment, 'adult' => $adult, 'children' => $children, 'booking_bill' => $paid_amount, 'calendar_event_id' => $eventIdList]);
+        //     $booking_id = Booking::create(['service_id' => $request->id, 'user_id' => $user_id->id, 'phone_number' => $phone, 'status' => 'confirmed', 'booking_date' => $booking_date, 'booking_time' => $booking_time, 'quantity' => $quantity, 'comment' => $comment, 'adult' => $adult, 'children' => $children, 'booking_bill' => $paid_amount, 'calendar_event_id' => $eventIdList]);
 
-            // invoice related code start here
-            $invoiceStore = Invoice::create(['user_id' => $user_id->id, 'booking_id' => $booking_id->id, 'total' => $paid_amount, 'due' => $paid_amount, 'created_by' => '', 'comment' => $comment]);
-            $invoiceId = $invoiceStore->id;
-            InvoiceItem::create(['invoice_id' => $invoiceId, 'service_title' => $title, 'booking_date' => $booking_date, 'booking_time' => $booking_time, 'unit_price' => $price, 'quantity' => $quantity, 'total' => $paid_amount]);
+        //     // invoice related code start here
+        //     $invoiceStore = Invoice::create(['user_id' => $user_id->id, 'booking_id' => $booking_id->id, 'total' => $paid_amount, 'due' => $paid_amount, 'created_by' => '', 'comment' => $comment]);
+        //     $invoiceId = $invoiceStore->id;
+        //     InvoiceItem::create(['invoice_id' => $invoiceId, 'service_title' => $title, 'booking_date' => $booking_date, 'booking_time' => $booking_time, 'unit_price' => $price, 'quantity' => $quantity, 'total' => $paid_amount]);
 
-            $b_id = $booking_id->id;
+        //     $b_id = $booking_id->id;
 
-            if ($request->paid_amount) Payment::create(['booking_id' => $b_id, 'currency_code' => $currency_code, 'paid_amount' => $request->paid_amount, 'method_id' => $request->method_id]);
-            else Payment::create(['booking_id' => $b_id, 'currency_code' => $currency_code, 'paid_amount' => 0, 'method_id' => 0]);
+        //     if ($request->paid_amount) Payment::create(['booking_id' => $b_id, 'currency_code' => $currency_code, 'paid_amount' => $request->paid_amount, 'method_id' => $request->method_id]);
+        //     else Payment::create(['booking_id' => $b_id, 'currency_code' => $currency_code, 'paid_amount' => 0, 'method_id' => 0]);
 
-            $content = EmailTemplate::select('template_subject', 'default_content', 'custom_content')->where('template_type', 'booking_confirmation')->first();
+        //     $content = EmailTemplate::select('template_subject', 'default_content', 'custom_content')->where('template_type', 'booking_confirmation')->first();
 
-            $subject = $content->template_subject;
+        //     $subject = $content->template_subject;
 
-            if ($content->custom_content) {
-                $text = $content->custom_content;
-                $adminText = $adminContent->custom_content;
-            } else {
-                $text = $content->default_content;
-                $adminText = $adminContent->default_content;
-            }
+        //     if ($content->custom_content) {
+        //         $text = $content->custom_content;
+        //         $adminText = $adminContent->custom_content;
+        //     } else {
+        //         $text = $content->default_content;
+        //         $adminText = $adminContent->default_content;
+        //     }
 
-            if ($request->paid_amount < $paid_amount) {
-                $payment = Lang::get('lang.due');
-            } else {
-                $payment = Lang::get('lang.paid');
-            }
+        //     if ($request->paid_amount < $paid_amount) {
+        //         $payment = Lang::get('lang.due');
+        //     } else {
+        //         $payment = Lang::get('lang.paid');
+        //     }
 
-            $b_time = array();
-            $booking_time = unserialize($booking_time);
+        //     $b_time = array();
+        //     $booking_time = unserialize($booking_time);
 
-            foreach ($booking_time as $item) {
+        //     foreach ($booking_time as $item) {
 
-                $item = $allSet->timeFormat($item);
-                array_push($b_time, $item);
-            }
+        //         $item = $allSet->timeFormat($item);
+        //         array_push($b_time, $item);
+        //     }
 
-            $b_time = serialize($b_time);
+        //     $b_time = serialize($b_time);
 
-            if ($serviceType === 'daily') {
-                $mailText = str_replace('{booking_id}', $b_id, str_replace('{first_name}', $first_name, str_replace('{last_name}', $last_name, str_replace('{service_title}', $title, str_replace('{booking_quantity}', $quantity, str_replace('{booking_status}', 'Confirmed', str_replace('{paid_amount}', $allSet->getCurrency($paid_amount), str_replace('{app_name}', $appName, str_replace('{booking_date}', $allSet->getDate($booking_date), str_replace('{booking_slot}', '-', str_replace('{payment_status}', $payment, $text)))))))))));
-                $adminMailText = str_replace('{booking_id}', $b_id,
-                    str_replace('{customer_name}', $customer_name,
-                        str_replace('{service_title}', $title,
-                            str_replace('{booking_quantity}', $quantity,
-                                str_replace('{booking_status}', 'Confirmed',
-                                    str_replace('{paid_amount}', $allSet->getCurrency($paid_amount),
-                                        str_replace('{app_name}', $appName,
-                                            str_replace('{booking_date}', $allSet->getDate($booking_date),
-                                                str_replace('{booking_slot}', '-',
-                                                    str_replace('{payment_status}', $payment, $adminText))))))))));
-            } else {
-                $mailText = str_replace('{booking_id}', $b_id, str_replace('{first_name}', $first_name, str_replace('{last_name}', $last_name, str_replace('{service_title}', $title, str_replace('{booking_quantity}', $quantity, str_replace('{booking_status}', 'Confirmed', str_replace('{paid_amount}', $allSet->getCurrency($paid_amount), str_replace('{app_name}', $appName, str_replace('{booking_date}', $allSet->getDate($booking_date), str_replace('{booking_slot}', implode(', ', unserialize($b_time)), str_replace('{payment_status}', $payment, $text)))))))))));
-                $adminMailText = str_replace('{booking_id}', $b_id,
-                    str_replace('{customer_name}', $customer_name,
-                        str_replace('{service_title}', $title,
-                            str_replace('{booking_quantity}', $quantity,
-                                str_replace('{booking_status}', 'Confirmed',
-                                    str_replace('{paid_amount}', $allSet->getCurrency($paid_amount),
-                                        str_replace('{app_name}', $appName,
-                                            str_replace('{booking_date}', $allSet->getDate($booking_date),
-                                                str_replace('{booking_slot}', implode(', ', unserialize($b_time)),
-                                                    str_replace('{payment_status}', $payment, $adminText))))))))));
-            }
+        //     if ($serviceType === 'daily') {
+        //         $mailText = str_replace('{booking_id}', $b_id, str_replace('{first_name}', $first_name, str_replace('{last_name}', $last_name, str_replace('{service_title}', $title, str_replace('{booking_quantity}', $quantity, str_replace('{booking_status}', 'Confirmed', str_replace('{paid_amount}', $allSet->getCurrency($paid_amount), str_replace('{app_name}', $appName, str_replace('{booking_date}', $allSet->getDate($booking_date), str_replace('{booking_slot}', '-', str_replace('{payment_status}', $payment, $text)))))))))));
+        //         $adminMailText = str_replace('{booking_id}', $b_id,
+        //             str_replace('{customer_name}', $customer_name,
+        //                 str_replace('{service_title}', $title,
+        //                     str_replace('{booking_quantity}', $quantity,
+        //                         str_replace('{booking_status}', 'Confirmed',
+        //                             str_replace('{paid_amount}', $allSet->getCurrency($paid_amount),
+        //                                 str_replace('{app_name}', $appName,
+        //                                     str_replace('{booking_date}', $allSet->getDate($booking_date),
+        //                                         str_replace('{booking_slot}', '-',
+        //                                             str_replace('{payment_status}', $payment, $adminText))))))))));
+        //     } else {
+        //         $mailText = str_replace('{booking_id}', $b_id, str_replace('{first_name}', $first_name, str_replace('{last_name}', $last_name, str_replace('{service_title}', $title, str_replace('{booking_quantity}', $quantity, str_replace('{booking_status}', 'Confirmed', str_replace('{paid_amount}', $allSet->getCurrency($paid_amount), str_replace('{app_name}', $appName, str_replace('{booking_date}', $allSet->getDate($booking_date), str_replace('{booking_slot}', implode(', ', unserialize($b_time)), str_replace('{payment_status}', $payment, $text)))))))))));
+        //         $adminMailText = str_replace('{booking_id}', $b_id,
+        //             str_replace('{customer_name}', $customer_name,
+        //                 str_replace('{service_title}', $title,
+        //                     str_replace('{booking_quantity}', $quantity,
+        //                         str_replace('{booking_status}', 'Confirmed',
+        //                             str_replace('{paid_amount}', $allSet->getCurrency($paid_amount),
+        //                                 str_replace('{app_name}', $appName,
+        //                                     str_replace('{booking_date}', $allSet->getDate($booking_date),
+        //                                         str_replace('{booking_slot}', implode(', ', unserialize($b_time)),
+        //                                             str_replace('{payment_status}', $payment, $adminText))))))))));
+        //     }
 
-            //pdf generate and email send code
-            $this->sendPdf($invoiceId, $mailText,$adminMailText, $email, $subject, $adminEmailSubject);
+        //     //pdf generate and email send code
+        //     $this->sendPdf($invoiceId, $mailText,$adminMailText, $email, $subject, $adminEmailSubject);
 
-            //save custom fields
-            $customData = new CustomDataController();
-            $customData->insertUpdateCustomFieldData('booking', $b_id, json_decode($request->customFields), false);
+        //     //save custom fields
+        //     $customData = new CustomDataController();
+        //     $customData->insertUpdateCustomFieldData('booking', $b_id, json_decode($request->customFields), false);
 
-        } else {
+        // } else {
 
             $transaction_id = $request->transaction_id;
             $booking_id = Booking::create(['service_id' => $request->id, 'user_id' => $user_id->id, 'phone_number' => $phone, 'booking_date' => $booking_date, 'booking_time' => $booking_time, 'quantity' => $quantity, 'comment' => $comment, 'adult' => $adult, 'children' => $children, 'booking_bill' => $paid_amount, 'calendar_event_id' => $eventIdList]);
@@ -310,9 +295,13 @@ class BookingController extends Controller
             InvoiceItem::create(['invoice_id' => $invoiceId, 'service_title' => $title, 'booking_date' => $booking_date, 'booking_time' => $booking_time, 'unit_price' => $price, 'quantity' => $quantity, 'total' => $paid_amount]);
 
             $b_id = $booking_id->id;
-
-            if ($request->paid_amount) Payment::create(['booking_id' => $b_id, 'currency_code' => $currency_code, 'paid_amount' => $request->paid_amount, 'method_id' => $request->method_id, 'transaction_id' => $transaction_id]);
-            else Payment::create(['booking_id' => $b_id, 'currency_code' => $currency_code, 'paid_amount' => 0, 'method_id' => 0, 'transaction_id' => $transaction_id]);
+            // THIS IS WHERE FLUTTER WAVE COMES IN
+            
+            if ($request->paid_amount) {
+                Payment::create(['booking_id' => $b_id, 'currency_code' => $currency_code, 'paid_amount' => $request->paid_amount, 'method_id' => $request->method_id, 'transaction_id' => $transaction_id]);
+            }else {
+                Payment::create(['booking_id' => $b_id, 'currency_code' => $currency_code, 'paid_amount' => 0, 'method_id' => 0, 'transaction_id' => $transaction_id]);
+            }
 
             $content = EmailTemplate::select('template_subject', 'default_content', 'custom_content')->where('template_type', 'booking_received')->first();
 
@@ -372,7 +361,7 @@ class BookingController extends Controller
 
             $customData = new CustomDataController();
             $customData->insertUpdateCustomFieldData('booking', $b_id, json_decode($request->customFields), false);
-        }
+        // }
 
         $notifcations = new Notification();
         $notifcations->event = 'submitted_a_new_booking';
@@ -396,10 +385,68 @@ class BookingController extends Controller
         $notifcations->notify_to = $notify;
         $notifcations->save();
 
-        $response = [
-            'message' => Lang::get('lang.booking_saved_successfully')
+        $payment = new PayService();
+
+        $data = [
+            'tx_ref' => $b_id,//system generatted ref
+            'amount' => $request->price,
+            'email' => $request->email ?: 'transaction@lifecare.com',
+            'currency' => "NGN",
+            'redirect_url' => route('verifyPayment'),
+            'payment_options' =>  ["card", "banktransfer", "ussd", "account"],
+            'customization' => [
+                'descriptions' => 'Life Care Service Charge',
+                "title" => "Life Care",
+            ],
+            'customer' => [
+                'email' => $request->email ?: 'transaction@lifecare.com',
+                'name' =>  $request->first_name ." ". $request->last_name ?: null
+            ],
+            'meta' => [
+                    'description' => $request->title, 
+                    'userfullname' => $request->first_name ." ". $request->last_name, 
+                    'date' => now(),
+                    'title' =>  $request->title,
+                    'amount'=> $request->price,
+                    ], 
         ];
-        return response()->json($response, 200);
+        return response()->json(['link' => $payment->pay($data)], 200);
+    }
+
+    public function verifyPayment(Request $request){
+        $payment = new PayService();
+        $data =  $payment->verifyPayment($request->transaction_id);
+        $dd = json_decode($data->body());
+        if ($dd->status != 'success') {
+            return back()->with('error', "Failed to complete payment");
+        }
+        Payment::where(['booking_id' => $request->tx_ref])->update(['currency_code' => $dd->data->currency, 'paid_amount' => $dd->data->amount, 'method_id' => 4]);
+        ValidPayment::create([
+                'tx_ref' => $dd->data->tx_ref,
+                'flw_ref' => $dd->data->flw_ref,
+                'device_fingerprint' => $dd->data->device_fingerprint,
+                'amount' => $dd->data->amount,
+                'currency' => $dd->data->currency,
+                'charged_amount' => $dd->data->charged_amount,
+                'app_fee' => $dd->data->app_fee,
+                'merchant_fee' => $dd->data->merchant_fee,
+                'processor_response' => $dd->data->processor_response,
+                'auth_model' => $dd->data->auth_model,
+                'ip' => $dd->data->ip,
+                'narration' => $dd->data->narration,
+                'status' => $dd->data->status,
+                'payment_type' => $dd->data->payment_type,
+                'created_at' => $dd->data->created_at,
+                'account_id' => $dd->data->account_id,
+                'card' => $dd->data->card,
+                'meta' => $dd->data->meta,
+                'amount_settled' => $dd->data->amount_settled,
+                'customer' => $dd->data->customer,
+            ]);
+
+            
+
+        return redirect()->route('dashboard');
     }
 
     public function action(Request $request, $id)

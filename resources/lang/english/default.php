@@ -344,6 +344,7 @@ return [
     "service" => "Service",
     "view" => "View",
     "book" => "Book Appointment",
+    "booktwo" => "Books Appointment",
     "booking_id" => "Booking Id",
     "service_id" => "Service Id",
     "status" => "Status",

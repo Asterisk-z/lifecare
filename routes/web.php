@@ -28,6 +28,7 @@ use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
@@ -35,6 +36,7 @@ use App\Http\Controllers\InstallDemoDataController;
 use App\Http\Controllers\Setup\EnvironmentController;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+use App\Services\Payment;
 
 /**
  * Hi there I just formatted all the routes which is to support laravel 8 *
@@ -383,6 +385,8 @@ Route::get('/getcurrency', [SettingController::class, 'getCurrency']);
 
 Route::post('/bookservice', [BookingController::class, 'setBooking']);
 
+Route::get('/validate/booking/payment', [BookingController::class, 'verifyPayment'])->name('verifyPayment');
+
 Route::get('/paymentstripe', [PaymentController::class, 'paymentForm']);
 
 Route::post('/paymentstripe', [PaymentController::class, 'paymentForm']);
@@ -441,3 +445,15 @@ Route::group(['prefix' => 'app'], function () {
     Route::post('environment/install', [EnvironmentController::class, 'store'])
         ->name('app.installer');
 });
+
+
+
+Route::get('test', function() {
+    $payment = new Payment();
+    return $payment->pay("ere");
+});
+Route::get('validate-test', function(Request $request) {
+    // dd($request->all());
+    $payment = new Payment();
+    return $payment->verifyPayment($request->transaction_id);
+})->name('validatetest');
